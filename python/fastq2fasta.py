@@ -2,6 +2,7 @@
 # by cutting low quality reads (marked with # in the quality line)
 # in our sample files with BASE=33, see  http://drive5.com/usearch/manual/quality_score.html
 
+import sys
 from datetime import datetime
 
 MinSeqLen = 60
@@ -32,14 +33,14 @@ def convertFastqItem2FastaItem(inputLines, minSeqLen = MinSeqLen):
       break
     else:
       cnt += 1
-  if (origLen - cnt < 60):
+  if (origLen - cnt < minSeqLen):
     return "TOO LOW SEQUENCE QUALITY : " + header
   if (cnt > 0):
     return [transformHeader(header, cnt, origLen), cutSeq(sequence, cnt)]
   else:
     return [transformHeaderSimple(header), sequence]
 
-def convertFastqFile2FastaFile(inFileName, outFileName, logFileName):
+def convertFastqFile2FastaFile(inFileName, outFileName, logFileName, minSeqLen = MinSeqLen):
   infile = open(inFileName, 'r')
   outfile = open(outFileName, 'w')
   logfile = open(logFileName, 'w')
@@ -51,7 +52,7 @@ def convertFastqFile2FastaFile(inFileName, outFileName, logFileName):
     linesToProcess.append(line.strip())
     if (len(linesToProcess) == 4):
       itemCounter += 1
-      result = convertFastqItem2FastaItem(linesToProcess)
+      result = convertFastqItem2FastaItem(linesToProcess, minSeqLen)
       if (len(result) != 2):
         logfile.write(str(datetime.now()) + "  -  " + result + "\n")
       else:
@@ -66,11 +67,25 @@ def convertFastqFile2FastaFile(inFileName, outFileName, logFileName):
   logfile.close()
 
 
-def main():
-  convertFastqFile2FastaFile('../sample_data/sample1.fastq',
-       '../sample_data/sample1_result.fasta',
-       '../sample_data/sample1_logs.txt')
+def main(params):
+  if len(params) < 3:
+    print("Usage:")
+    print("python fastq2fasta.py <input fastq file>  <output fasta file>  <log file>  [seq length threshold (default:60)]")
+    return
 
+  infile = params[0]
+  outfile = params[1]
+  logfile = params[2]
+  if len(params) >= 4:
+    minSeqLen = int(params[3])
+    print("Minimum sequence length is " + str(minSeqLen))
+    convertFastqFile2FastaFile(infile, outfile, logfile, minSeqLen)
+  else:
+    print("Minimum sequence length is " + str(MinSeqLen))
+    convertFastqFile2FastaFile(infile, outfile, logfile)
+  # convertFastqFile2FastaFile('../sample_data/sample1.fastq',
+  #      '../sample_data/sample1_result.fasta',
+  #      '../sample_data/sample1_logs.txt')
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])

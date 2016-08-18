@@ -9,4 +9,4 @@ Python scripts to convert fastq to fasta format - optionally trimming low qualit
 ## Run the tests
 
     $ cd python
-    $ py.test fastq2fastaTest.py
+    $ py.test

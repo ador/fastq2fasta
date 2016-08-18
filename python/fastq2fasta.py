@@ -73,13 +73,16 @@ def convertFastqFile2FastaFile( inFileName, outFileName, logFileName,
 def main(params):
   if len(params) < 3:
     print("Usage:")
-    print("python fastq2fasta.py <input fastq file>  <output fasta file>  <log file>  [seq length threshold (default:60)]")
+    print("python fastq2fasta.py <input fastq file>  <output fasta file>  <log file>  [seq length threshold (default:60)] [trim low quality ends (default: True)]")
     return
 
   infile = params[0]
   outfile = params[1]
   logfile = params[2]
-  if len(params) >= 4:
+  if len(params) >= 5:
+    trimEnd = bool(params[4])
+    convertFastqFile2FastaFile(infile, outfile, logfile, minSeqLen, trimEnd)
+  elif len(params) == 4:
     minSeqLen = int(params[3])
     print("Minimum sequence length is " + str(minSeqLen))
     convertFastqFile2FastaFile(infile, outfile, logfile, minSeqLen)

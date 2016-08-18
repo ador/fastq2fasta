@@ -53,3 +53,23 @@ def test_trim_all_bad():
   resultLines = convertFastqItem2FastaItem(oneFastqItem, 10)
   assert("TOO LOW SEQUENCE QUALITY", resultLines)
 
+def test_trim1():
+  oneFastqItem = [ "@ERR445333.1.2 1 length=30",
+        "AACCCCTAACCCCTAACCCTAACCCTAACC",
+        "+ERR445333.1.2 1 length=30",
+        "EFFFGF?EFGA???DC>:?AEA########" ]
+  resultLines = convertFastqItem2FastaItem(oneFastqItem, 20, True)
+  assert(2, len(resultLines))
+  assert('>ERR445333.1.2 1 length=22' == resultLines[0])
+  assert(22, len(resultLines[1])) # nothing should be cut
+
+def test_notrim1():
+  oneFastqItem = [ "@ERR445333.1.2 1 length=30",
+        "AACCCCTAACCCCTAACCCTAACCCTAACC",
+        "+ERR445333.1.2 1 length=30",
+        "EFFFGF?EFGA???DC>:?AEA########" ]
+  resultLines = convertFastqItem2FastaItem(oneFastqItem, 20, False)
+  assert(2, len(resultLines))
+  assert('>ERR445333.1.2 1 length=30' == resultLines[0])
+  assert(30, len(resultLines[1])) # nothing should be cut
+  

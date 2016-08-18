@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 
 MinSeqLen = 60
+TrimBadEndings = True
 
 def transformHeaderSimple(headerStr):
   return ">" + headerStr[1:]
@@ -19,7 +20,7 @@ def cutSeq(seq, n):
   until = len(seq) - n
   return seq[0:until]
 
-def convertFastqItem2FastaItem(inputLines, minSeqLen = MinSeqLen):
+def convertFastqItem2FastaItem(inputLines, minSeqLen = MinSeqLen, trimBadEndings = TrimBadEndings):
   # there should be 4 input lines
   if (len(inputLines) != 4 or inputLines[0][0] != '@'):
     return "ERROR: WRONG INPUT FORMAT"
@@ -35,12 +36,14 @@ def convertFastqItem2FastaItem(inputLines, minSeqLen = MinSeqLen):
       cnt += 1
   if (origLen - cnt < minSeqLen):
     return "TOO LOW SEQUENCE QUALITY : " + header
-  if (cnt > 0):
+  if (cnt > 0 and trimBadEndings):
     return [transformHeader(header, cnt, origLen), cutSeq(sequence, cnt)]
   else:
     return [transformHeaderSimple(header), sequence]
 
-def convertFastqFile2FastaFile(inFileName, outFileName, logFileName, minSeqLen = MinSeqLen):
+def convertFastqFile2FastaFile( inFileName, outFileName, logFileName,
+                                minSeqLen = MinSeqLen,
+                                trimBadEndings = TrimBadEndings):
   infile = open(inFileName, 'r')
   outfile = open(outFileName, 'w')
   logfile = open(logFileName, 'w')
@@ -52,7 +55,7 @@ def convertFastqFile2FastaFile(inFileName, outFileName, logFileName, minSeqLen =
     linesToProcess.append(line.strip())
     if (len(linesToProcess) == 4):
       itemCounter += 1
-      result = convertFastqItem2FastaItem(linesToProcess, minSeqLen)
+      result = convertFastqItem2FastaItem(linesToProcess, minSeqLen, trimBadEndings)
       if (len(result) != 2):
         logfile.write(str(datetime.now()) + "  -  " + result + "\n")
       else:
